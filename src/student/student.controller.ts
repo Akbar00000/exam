@@ -1,48 +1,58 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
-import { StudentService } from './student.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Patch,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
+import { StudentsService } from './student.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/roles.guard';
+import { Roles } from 'src/auth/roles.decorator';
 
 @Controller('students')
-export class StudentController {
-  constructor(private readonly studentService: StudentService) {}
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('teacher')
+export class StudentsController {
+  constructor(private readonly studentsService: StudentsService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() dto: CreateStudentDto) {
-    return this.studentService.create(dto);
+  create(@Body() dto: CreateStudentDto, @Req() req) {
+    const teacherId = req.user.id;
+    return this.studentsService.create(dto, teacherId);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get()
-  findAll() {
-    return this.studentService.findAll();
+  findAll(@Req() req) {
+    const teacherId = req.user.id;
+    return this.studentsService.findAll(teacherId);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.studentService.findOne(+id);
+  findOne(@Param('id') id: number, @Req() req) {
+    const teacherId = req.user.id;
+    return this.studentsService.findOne(id, teacherId);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateStudentDto) {
-    return this.studentService.update(+id, dto);
+  update(
+    @Param('id') id: number,
+    @Body() dto: UpdateStudentDto,
+    @Req() req,
+  ) {
+    const teacherId = req.user.id;
+    return this.studentsService.update(id, dto, teacherId);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.studentService.remove(+id);
-  }
-
-
-  @UseGuards(JwtAuthGuard)
-  @Get('my/students')
-  findMyStudents(@Request() req) {
-    const teacherId = req.user.id; 
-    return this.studentService.findByTeacher(teacherId);
+  remove(@Param('id') id: number, @Req() req) {
+    const teacherId = req.user.id;
+    return this.studentsService.remove(id, teacherId);
   }
 }

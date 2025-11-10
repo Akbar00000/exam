@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
-import { StudentModule } from './student/student.module';
+import { StudentsModule } from './student/student.module';
+import { TeacherModule } from './teacher/teacher.module';
 
 
 @Module({
@@ -19,7 +20,8 @@ import { StudentModule } from './student/student.module';
       synchronize: true, 
     }),
     AuthModule,
-    StudentModule
+    StudentsModule,
+    TeacherModule,
   ],
 })
 export class AppModule {}

@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { Teacher } from './teacher.entity';
+import { User } from 'src/auth/user.entity';
 
 @Entity()
 export class Student {
@@ -7,14 +7,17 @@ export class Student {
   id: number;
 
   @Column()
-  name: string;
+  fullName: string;
 
-  @Column({ unique: true })
-  email: string;
+  @Column()
+  age: number;
 
   @Column()
   phone: string;
 
-  @ManyToOne(() => Teacher, teacher => teacher.students)
-  teacher: Teacher;
+  @ManyToOne(() => User, (user) => user.students, { onDelete: 'CASCADE' })
+  teacher: User;
+
+  @Column()
+  teacherId: number;
 }
