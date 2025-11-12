@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Jo
 import { User } from '../auth/user.entity';
 import { Group } from '../group/group.entity';
 import { Payment } from '../payments/payment.entity';
+import { Day, DaySchedule } from '../teacher/day-schedule.entity';
 
 @Entity()
 export class Student {
@@ -49,4 +50,8 @@ export class Student {
 
   @Column({ type: 'varchar', nullable: true })
   telegramId?: string;
+
+
+  @Column({ type: 'json', nullable: true })
+  lessonTimes: DaySchedule[];
 }

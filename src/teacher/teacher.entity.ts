@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Student } from 'src/student/student.entity';
+import { Student } from '../student/student.entity';
+import { DaySchedule } from './day-schedule.entity';
 
 @Entity()
 export class Teacher {
@@ -18,6 +19,10 @@ export class Teacher {
   @Column({ default: 'teacher' })
   role: string;
 
-  @OneToMany(() => Student, (student) => student.teacher)
+  @OneToMany(() => Student, student => student.teacher)
   students: Student[];
+
+
+  @Column({ type: 'json', nullable: true })
+  lessonTimes: DaySchedule[];
 }

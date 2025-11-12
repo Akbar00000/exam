@@ -1,6 +1,7 @@
-import { Controller, Post, Get, Param, Delete, Body } from '@nestjs/common';
+import { Controller, Post, Get, Param, Delete, Body, Put } from '@nestjs/common';
 import { TeacherService } from './teacher.service';
 import { TeacherDto } from './dto/create-teacher.dto';
+import { UpdateTeacherScheduleDto } from './dto/update-teacher-schedule.dto';
 
 @Controller('teachers')
 export class TeacherController {
@@ -14,6 +15,14 @@ export class TeacherController {
   @Get()
   getAll() {
     return this.teacherService.getAllTeachers();
+  }
+
+@Put(':id/lesson-times')
+  updateSchedule(
+    @Param('id') id: number,
+    @Body() dto: UpdateTeacherScheduleDto,
+  ) {
+    return this.teacherService.updateSchedule(id, dto);
   }
 
   @Get(':id')

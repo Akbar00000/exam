@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Payment } from './payment.entity';
 import { CreatePaymentDto } from './create-payment.dto';
 import { Student } from '../student/student.entity';
+import { PaymentMethod } from '../enums/payment-method.enum';
 
 @Injectable()
 export class PaymentService {
@@ -18,9 +19,28 @@ export class PaymentService {
     const student = await this.studentRepo.findOne({ where: { id: dto.studentId } });
     if (!student) throw new NotFoundException('Student topilmadi');
 
+    
+    let method: PaymentMethod;
+    switch (dto.method.toLowerCase()) {
+      case 'cash':
+        method = PaymentMethod.CASH;
+        break;
+      case 'card':
+        method = PaymentMethod.CARD;
+        break;
+      case 'online':
+        method = PaymentMethod.ONLINE;
+        break;
+      case 'telegram':
+        method = PaymentMethod.TELEGRAM;
+        break;
+      default:
+        throw new BadRequestException('Noto‘g‘ri to‘lov turi');
+    }
+
     const payment = this.paymentRepo.create({
       amount: dto.amount,
-      method: dto.method,
+      method,
       student,
     });
 

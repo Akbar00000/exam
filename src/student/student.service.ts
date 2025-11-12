@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Student } from './student.entity';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { User } from '../auth/user.entity';
+import { UpdateStudentScheduleDto } from './dto/update-student-schedule.dto';
 
 @Injectable()
 export class StudentService {
@@ -74,4 +75,12 @@ export class StudentService {
 
     return { message: 'Student marked as left successfully' };
   }
+
+  async updateSchedule(studentId: number, dto: UpdateStudentScheduleDto) {
+  const student = await this.studentRepo.findOne({ where: { id: studentId } });
+  if (!student) throw new NotFoundException('Student topilmadi');
+
+  student.lessonTimes = dto.lessonTimes;
+  return this.studentRepo.save(student);
+}
 }

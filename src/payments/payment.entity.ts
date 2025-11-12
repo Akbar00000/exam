@@ -1,5 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
+import {  Entity,  PrimaryGeneratedColumn,  Column, ManyToOne,  CreateDateColumn,} from 'typeorm';
 import { Student } from '../student/student.entity';
+import { PaymentMethod } from '../enums/payment-method.enum';
+import { PaymentStatus } from '../enums/payment-status.enum';
 
 @Entity('payments')
 export class Payment {
@@ -9,10 +11,23 @@ export class Payment {
   @Column('float')
   amount: number;
 
-  @Column()
-  method: string;
+  @Column({
+    type: 'enum',
+    enum: PaymentMethod,
+    default: PaymentMethod.CASH,
+  })
+  method: PaymentMethod;
 
-  @ManyToOne(() => Student, student => student.paymentList, { onDelete: 'CASCADE' })
+  @Column({
+    type: 'enum',
+    enum: PaymentStatus,
+    default: PaymentStatus.SUCCESS,
+  })
+  status: PaymentStatus;
+
+  @ManyToOne(() => Student, (student) => student.paymentList, {
+    onDelete: 'CASCADE',
+  })
   student: Student;
 
   @CreateDateColumn()

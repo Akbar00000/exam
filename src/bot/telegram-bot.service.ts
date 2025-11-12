@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { Murojat } from '../murojat/murojat.entity';
 import { Payment } from '../payments/payment.entity';
 import { Student } from '../student/student.entity';
+import { PaymentMethod } from '../enums/payment-method.enum';
 
 interface SessionData {
   step?: 'name' | 'phone' | 'comment' | 'student_name' | 'payment_amount';
@@ -41,11 +42,13 @@ export class TelegramBotService {
       ctx.session = {};
       await ctx.reply(
         '👋 Assalomu aleykum! Tugmalardan birini tanlang:',
-        Markup.keyboard([['📝 Murojaat qoldirish'], ['💳 To‘lov qilish']]).resize().oneTime(),
+        Markup.keyboard([['📝 Murojaat qoldirish'], ['💳 To‘lov qilish']])
+          .resize()
+          .oneTime(),
       );
     });
 
-    // Murojaat qoldirish
+    // Murojaat 
     this.bot.hears('📝 Murojaat qoldirish', async (ctx) => {
       ctx.session = { step: 'name' };
       await ctx.reply('✍️ Iltimos, ismingizni yozing:');
@@ -62,16 +65,20 @@ export class TelegramBotService {
       const session = ctx.session;
       const text = ctx.message.text.trim();
 
-     
+      // name
       if (session.step === 'name') {
         if (!text) return ctx.reply('❗ Ismingiz bo‘sh bo‘lmasin.');
         session.name = text;
         session.step = 'phone';
         await ctx.reply('📞 Telefon raqamingizni yozing:');
+
+      // phone
       } else if (session.step === 'phone') {
         session.phone = text;
         session.step = 'comment';
         await ctx.reply('💬 Izohingizni yozing:');
+
+      //coment
       } else if (session.step === 'comment') {
         session.comment = text;
 
@@ -83,14 +90,14 @@ export class TelegramBotService {
           });
           await this.murojatRepo.save(murojat);
 
-          await ctx.reply(` Rahmat, ${session.name}! Murojaatingiz qabul qilindi.`);
+          await ctx.reply(` Rahmat, ${session.name}! Murojaatingiz qabul qilindi.\nMurojatni teshkirish uchun Postmanda /murojat sorovi yuboring!`);
           ctx.session = {};
         } catch (err) {
           console.error(err);
           await ctx.reply(' Murojaatingizni saqlashda xatolik yuz berdi.');
         }
 
-      // 
+      
       } else if (session.step === 'student_name') {
         session.studentName = text;
 
@@ -99,14 +106,14 @@ export class TelegramBotService {
           where: { firstName, lastName },
         });
 
-        if (!student) return ctx.reply('❌ Bunday Student topilmadi. Iltimos, to‘g‘ri ism va familiya kiriting.');
+        if (!student) return ctx.reply(' Bunday Student topilmadi. Iltimos, to‘g‘ri ism va familiya kiriting.');
 
         session.step = 'payment_amount';
         session.studentId = student.id;
 
         await ctx.reply(`💰 ${student.firstName} ${student.lastName} uchun to‘lov summasini kiriting (so‘m):`);
 
-      // 
+      
       } else if (session.step === 'payment_amount') {
         const amount = parseFloat(text);
         if (isNaN(amount)) return ctx.reply(' Iltimos, to‘g‘ri raqam kiriting.');
@@ -114,14 +121,15 @@ export class TelegramBotService {
         const student = await this.studentRepo.findOne({ where: { id: session.studentId! } });
         if (!student) return ctx.reply(' Student topilmadi.');
 
+        
         const payment = this.paymentRepo.create({
-          amount,
-          method: 'Telegram',
+            amount,
+            method: PaymentMethod.TELEGRAM, 
           student,
         });
         await this.paymentRepo.save(payment);
 
-        await ctx.reply(`💳 To‘lov qabul qilindi: ${amount} so‘m`);
+        await ctx.reply(` To‘lov qabul qilindi: ${amount} so‘m\nTolov ni teshkirish uchun Postmanda /payments sorovi yuboring!`);
 
         await this.notifyPayment(
           `💳 Yangi to'lov:\n👤 ${student.firstName} ${student.lastName}\n💰 ${amount} so‘m\n💳 Telegram`

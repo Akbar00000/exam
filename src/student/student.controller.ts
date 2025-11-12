@@ -2,6 +2,7 @@ import { Controller, Post, Body, UseGuards, Req, Get, Param, Put, Delete } from 
 import { StudentService } from './student.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateStudentDto } from './dto/create-student.dto';
+import { UpdateStudentScheduleDto } from './dto/update-student-schedule.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('students')
@@ -36,5 +37,10 @@ export class StudentController {
   @Delete(':id')
   remove(@Req() req, @Param('id') id: number) {
     return this.svc.removeByTeacher(id, req.user.sub);
+  }
+
+  @Put(':id/lesson-times')
+  updateSchedule(@Param('id') id: number, @Body() dto: UpdateStudentScheduleDto) {
+    return this.svc.updateSchedule(id, dto);
   }
 }

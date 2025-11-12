@@ -1,48 +1,57 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Teacher } from './teacher.entity';
+import { UpdateTeacherScheduleDto } from './dto/update-teacher-schedule.dto';
 import * as bcrypt from 'bcrypt';
-import { User } from 'src/auth/user.entity';
-import { TeacherDto } from './dto/create-teacher.dto';
 
 @Injectable()
 export class TeacherService {
   constructor(
-    @InjectRepository(User) private userRepo: Repository<User>,
+    @InjectRepository(Teacher)
+    private teacherRepo: Repository<Teacher>,
   ) {}
 
-  async createTeacher(dto: TeacherDto) {
-    const exist = await this.userRepo.findOne({ where: { email: dto.email } });
+  async createTeacher(dto: any) {
+    const exist = await this.teacherRepo.findOne({ where: { email: dto.email } });
     if (exist) throw new BadRequestException('Email already exists');
 
     const hashed = await bcrypt.hash(dto.password, 10);
 
-    const teacher = this.userRepo.create({
-      username: dto.username,
+    const teacher = this.teacherRepo.create({
+      fullName: dto.username,
       email: dto.email,
       password: hashed,
       role: 'teacher',
     });
 
-    return this.userRepo.save(teacher);
+    return this.teacherRepo.save(teacher);
   }
 
   async getAllTeachers() {
-    return this.userRepo.find({ where: { role: 'teacher' } });
+    return this.teacherRepo.find();
   }
 
   async getTeacherById(id: number) {
-    return this.userRepo.findOne({ where: { id, role: 'teacher' } });
+    const teacher = await this.teacherRepo.findOne({ where: { id } });
+    if (!teacher) throw new NotFoundException('Teacher not found');
+    return teacher;
   }
 
-async deleteTeacher(id: number) {
-  const result = await this.userRepo.delete({ id, role: 'teacher' });
-
-  if (result.affected === 0) {
-    return { message: 'Teacher not found' };
+  async deleteTeacher(id: number) {
+    const result = await this.teacherRepo.delete(id);
+    if (result.affected === 0) {
+      return { message: 'Teacher not found' };
+    }
+    return { message: 'Teacher deleted successfully' };
   }
 
-  return { message: 'Teacher deleted successfully' };
-}
+ 
+  async updateSchedule(teacherId: number, dto: UpdateTeacherScheduleDto) {
+    const teacher = await this.teacherRepo.findOne({ where: { id: teacherId } });
+    if (!teacher) throw new NotFoundException('Teacher not found');
 
+    teacher.lessonTimes = dto.lessonTimes;
+    return this.teacherRepo.save(teacher);
+  }
 }
