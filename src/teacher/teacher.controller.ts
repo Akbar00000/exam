@@ -1,28 +1,28 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Get, Param, Delete, Body } from '@nestjs/common';
 import { TeacherService } from './teacher.service';
-import { CreateTeacherDto } from './dto/create-teacher.dto';
+import { TeacherDto } from './dto/create-teacher.dto';
 
 @Controller('teachers')
 export class TeacherController {
   constructor(private readonly teacherService: TeacherService) {}
 
-  @Post('register')
-  register(@Body() dto: CreateTeacherDto) {
-    return this.teacherService.create(dto);
+  @Post()
+  create(@Body() dto: TeacherDto) {
+    return this.teacherService.createTeacher(dto);
   }
 
   @Get()
-  findAll() {
-    return this.teacherService.findAll();
+  getAll() {
+    return this.teacherService.getAllTeachers();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.teacherService.findOne(id);
+  getOne(@Param('id') id: number) {
+    return this.teacherService.getTeacherById(id);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.teacherService.remove(id);
+  delete(@Param('id') id: number) {
+    return this.teacherService.deleteTeacher(id);
   }
 }

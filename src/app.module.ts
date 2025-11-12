@@ -2,8 +2,15 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
-import { StudentsModule } from './student/student.module';
+import { StudentModule } from './student/student.module';
 import { TeacherModule } from './teacher/teacher.module';
+import { Group } from './group/group.entity';
+import { GroupModule } from './group/group.module';
+import { StatsModule } from './stats/stats.module';
+import { TelegramBotModule } from './bot/telegram-bot.module';
+import { MurojatModule } from './murojat/murojat.module';
+import { PaymentModule } from './payments/payment.module';
+import { AttendanceModule } from './attendance/attendance.module';
 
 
 @Module({
@@ -20,8 +27,14 @@ import { TeacherModule } from './teacher/teacher.module';
       synchronize: true, 
     }),
     AuthModule,
-    StudentsModule,
+    StudentModule,
     TeacherModule,
+    GroupModule,
+    StatsModule,
+    TelegramBotModule,
+    MurojatModule,
+    PaymentModule,
+    AttendanceModule,
   ],
 })
 export class AppModule {}

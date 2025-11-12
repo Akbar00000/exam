@@ -1,46 +1,48 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Teacher } from './teacher.entity';
-import { CreateTeacherDto } from './dto/create-teacher.dto';
 import * as bcrypt from 'bcrypt';
+import { User } from 'src/auth/user.entity';
+import { TeacherDto } from './dto/create-teacher.dto';
 
 @Injectable()
 export class TeacherService {
   constructor(
-    @InjectRepository(Teacher)
-    private readonly teacherRepo: Repository<Teacher>,
+    @InjectRepository(User) private userRepo: Repository<User>,
   ) {}
 
-  async create(dto: CreateTeacherDto) {
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
-    const teacher = this.teacherRepo.create({
-      ...dto,
-      password: hashedPassword,
+  async createTeacher(dto: TeacherDto) {
+    const exist = await this.userRepo.findOne({ where: { email: dto.email } });
+    if (exist) throw new BadRequestException('Email already exists');
+
+    const hashed = await bcrypt.hash(dto.password, 10);
+
+    const teacher = this.userRepo.create({
+      username: dto.username,
+      email: dto.email,
+      password: hashed,
       role: 'teacher',
     });
-    return this.teacherRepo.save(teacher);
+
+    return this.userRepo.save(teacher);
   }
 
-  async findAll() {
-    return this.teacherRepo.find({ relations: ['students'] });
+  async getAllTeachers() {
+    return this.userRepo.find({ where: { role: 'teacher' } });
   }
 
-  async findOne(id: number) {
-    const teacher = await this.teacherRepo.findOne({
-      where: { id },
-      relations: ['students'],
-    });
-    if (!teacher) throw new NotFoundException('Учитель не найден');
-    return teacher;
+  async getTeacherById(id: number) {
+    return this.userRepo.findOne({ where: { id, role: 'teacher' } });
   }
 
-  async findByEmail(email: string) {
-    return this.teacherRepo.findOne({ where: { email } });
+async deleteTeacher(id: number) {
+  const result = await this.userRepo.delete({ id, role: 'teacher' });
+
+  if (result.affected === 0) {
+    return { message: 'Teacher not found' };
   }
 
-  async remove(id: number) {
-    const teacher = await this.findOne(id);
-    return this.teacherRepo.remove(teacher);
-  }
+  return { message: 'Teacher deleted successfully' };
+}
+
 }

@@ -1,5 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { User } from 'src/auth/user.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, JoinColumn, OneToMany } from 'typeorm';
+import { User } from '../auth/user.entity';
+import { Group } from '../group/group.entity';
+import { Payment } from '../payments/payment.entity';
 
 @Entity()
 export class Student {
@@ -7,17 +9,44 @@ export class Student {
   id: number;
 
   @Column()
-  fullName: string;
+  firstName: string;
 
   @Column()
-  age: number;
+  lastName: string;
+
+  @Column({ unique: true })
+  email: string;
 
   @Column()
   phone: string;
 
-  @ManyToOne(() => User, (user) => user.students, { onDelete: 'CASCADE' })
+  @Column()
+  age: number;
+
+  @ManyToOne(() => User, user => user.id)
+  @JoinColumn({ name: 'teacherId' })
   teacher: User;
 
-  @Column()
-  teacherId: number;
+  @ManyToOne(() => Group, group => group.students)
+  @JoinColumn({ name: 'groupId' })
+  group: Group;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'addedById' })
+  addedBy: User;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  joinedAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  leftAt: Date;
+
+  @OneToMany(() => Payment, payment => payment.student)
+  paymentList: Payment[];
+
+  @Column({ type: 'varchar', nullable: true })
+  telegramId?: string;
 }

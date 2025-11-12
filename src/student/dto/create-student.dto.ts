@@ -1,13 +1,30 @@
-import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
+import { IsString, IsInt, IsEmail, Min, Max, Length, IsOptional, IsNotEmpty } from 'class-validator';
 
 export class CreateStudentDto {
-  @IsNotEmpty()
   @IsString()
-  fullName: string;
+  @Length(2, 50)
+  firstName: string;
 
-  @IsNumber()
+  @IsString()
+  @Length(2, 50)
+  lastName: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @Length(9, 15)
+  phone: string;
+
+  @IsInt()
+  @Min(5)
+  @Max(100)
   age: number;
 
+  @IsOptional()
   @IsString()
-  phone: string;
+  telegramId?: string;
+
+  @IsOptional()
+  groupId?: string;
 }

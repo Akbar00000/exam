@@ -1,58 +1,40 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Delete,
-  Patch,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
-import { StudentsService } from './student.service';
+import { Controller, Post, Body, UseGuards, Req, Get, Param, Put, Delete } from '@nestjs/common';
+import { StudentService } from './student.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateStudentDto } from './dto/create-student.dto';
-import { UpdateStudentDto } from './dto/update-student.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { RolesGuard } from 'src/auth/roles.guard';
-import { Roles } from 'src/auth/roles.decorator';
 
+@UseGuards(JwtAuthGuard)
 @Controller('students')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('teacher')
-export class StudentsController {
-  constructor(private readonly studentsService: StudentsService) {}
+export class StudentController {
+  constructor(private svc: StudentService) {}
 
+  // CREATE
   @Post()
-  create(@Body() dto: CreateStudentDto, @Req() req) {
-    const teacherId = req.user.id;
-    return this.studentsService.create(dto, teacherId);
+  create(@Req() req, @Body() dto: CreateStudentDto) {
+    return this.svc.create(dto, req.user.sub, req.user.sub);
   }
 
+  // GET ALL
   @Get()
   findAll(@Req() req) {
-    const teacherId = req.user.id;
-    return this.studentsService.findAll(teacherId);
+    return this.svc.findAllByTeacher(req.user.sub);
   }
 
+  // GET ONE
   @Get(':id')
-  findOne(@Param('id') id: number, @Req() req) {
-    const teacherId = req.user.id;
-    return this.studentsService.findOne(id, teacherId);
+  findOne(@Req() req, @Param('id') id: number) {
+    return this.svc.findOneByTeacher(id, req.user.sub);
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: number,
-    @Body() dto: UpdateStudentDto,
-    @Req() req,
-  ) {
-    const teacherId = req.user.id;
-    return this.studentsService.update(id, dto, teacherId);
+  // UPDATE
+  @Put(':id')
+  update(@Req() req, @Param('id') id: number, @Body() dto: CreateStudentDto) {
+    return this.svc.updateByTeacher(id, req.user.sub, dto);
   }
 
+  // DELETE
   @Delete(':id')
-  remove(@Param('id') id: number, @Req() req) {
-    const teacherId = req.user.id;
-    return this.studentsService.remove(id, teacherId);
+  remove(@Req() req, @Param('id') id: number) {
+    return this.svc.removeByTeacher(id, req.user.sub);
   }
 }

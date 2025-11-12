@@ -1,7 +1,6 @@
-import { Student } from 'src/student/student.entity';
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-
-export type UserRole = 'admin' | 'teacher' | 'student';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn } from 'typeorm';
+import { Student } from '../student/student.entity';
+import { Group } from '../group/group.entity';
 
 @Entity()
 export class User {
@@ -12,18 +11,28 @@ export class User {
   email: string;
 
   @Column()
+  username: string;
+
+  @Column()
   password: string;
 
-  @Column({ type: 'enum', enum: ['admin', 'teacher', 'student'], default: 'student' })
-  role: UserRole;
+  @Column()
+  role: 'admin' | 'teacher';
 
   @Column({ nullable: true })
-  refreshToken?: string;
+  phone?: string;
 
   @Column({ nullable: true })
-  resetCode?: string;
+  address?: string;
 
+  @CreateDateColumn()
+  createdAt: Date;
 
-  @OneToMany(() => Student, (student) => student.teacher)
-  students?: Student[];
+ 
+  @OneToMany(() => Student, student => student.teacher)
+  students: Student[];
+
+ 
+  @OneToMany(() => Group, group => group.createdBy)
+  groupsCreated: Group[];
 }
