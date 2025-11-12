@@ -51,7 +51,7 @@ export class TelegramBotService {
       await ctx.reply('✍️ Iltimos, ismingizni yozing:');
     });
 
-    // To‘lov qilish
+    // Tolov
     this.bot.hears('💳 To‘lov qilish', async (ctx) => {
       ctx.session = { step: 'student_name' };
       await ctx.reply('👤 Iltimos, Studentning ism va familiyasini kiriting:');
@@ -62,7 +62,7 @@ export class TelegramBotService {
       const session = ctx.session;
       const text = ctx.message.text.trim();
 
-      // --- Murojaat ---
+     
       if (session.step === 'name') {
         if (!text) return ctx.reply('❗ Ismingiz bo‘sh bo‘lmasin.');
         session.name = text;
@@ -83,14 +83,14 @@ export class TelegramBotService {
           });
           await this.murojatRepo.save(murojat);
 
-          await ctx.reply(`✅ Rahmat, ${session.name}! Murojaatingiz qabul qilindi.`);
+          await ctx.reply(` Rahmat, ${session.name}! Murojaatingiz qabul qilindi.`);
           ctx.session = {};
         } catch (err) {
           console.error(err);
-          await ctx.reply('❌ Murojaatingizni saqlashda xatolik yuz berdi.');
+          await ctx.reply(' Murojaatingizni saqlashda xatolik yuz berdi.');
         }
 
-      // --- Studentni tanlash ---
+      // 
       } else if (session.step === 'student_name') {
         session.studentName = text;
 
@@ -106,13 +106,13 @@ export class TelegramBotService {
 
         await ctx.reply(`💰 ${student.firstName} ${student.lastName} uchun to‘lov summasini kiriting (so‘m):`);
 
-      // --- To‘lov summasi ---
+      // 
       } else if (session.step === 'payment_amount') {
         const amount = parseFloat(text);
-        if (isNaN(amount)) return ctx.reply('❗ Iltimos, to‘g‘ri raqam kiriting.');
+        if (isNaN(amount)) return ctx.reply(' Iltimos, to‘g‘ri raqam kiriting.');
 
         const student = await this.studentRepo.findOne({ where: { id: session.studentId! } });
-        if (!student) return ctx.reply('❌ Student topilmadi.');
+        if (!student) return ctx.reply(' Student topilmadi.');
 
         const payment = this.paymentRepo.create({
           amount,
